@@ -9,6 +9,7 @@ class BMesh {
     using       StringCallBack = void (*)(String);
 
     StringCallBack  actionCallBack = nullptr;
+    BoolCallBack    connectionCallBack = nullptr;           // Connection to "world" established
  public:
                 BMesh();
     bool        init(String meshName, String meshPassword, uint16_t meshPort, uint8_t meshChannel);
@@ -22,7 +23,10 @@ class BMesh {
     bool        isGatewayConnected();   // For nodes: Gateway is set and can be reached
 
     void        onAction(StringCallBack callBack);
+    void        onConnection(BoolCallBack callBack);
  private:
+    uint32_t    m_gatewayNode;
+
     String      m_meshName;
     String      m_meshPassword;
     uint32_t    m_meshPort;
@@ -31,6 +35,11 @@ class BMesh {
     bool        m_isGateway;
     String      m_SSID;
     String      m_Password;
+
+    void            receivedCallback(uint32_t from, String &msg);
+
+    void            sendHello();
+    void            sendHeartbeat();
 };
 
 #endif // __BMESH_H__
