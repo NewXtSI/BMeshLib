@@ -12,10 +12,10 @@ painlessMesh  __mesh;
 
 
 BMesh::BMesh() {
-    m_meshName = m_meshName;
-    m_meshPassword = meshPassword;
-    m_meshPort = meshPort;
-    m_meshChannel = meshChannel;
+    m_meshName = "";
+    m_meshPassword = "";
+    m_meshPort = 0;
+    m_meshChannel = 0;
     m_isGateway = false;
     m_SSID = "";
     m_Password = "";
@@ -25,6 +25,10 @@ BMesh::BMesh() {
 bool
 BMesh::init(String meshName, String meshPassword, uint16_t meshPort, uint8_t meshChannel) {
     bool bRet = true;
+    m_meshName = m_meshName;
+    m_meshPassword = meshPassword;
+    m_meshPort = meshPort;
+    m_meshChannel = meshChannel;
     __mesh.setDebugMsgTypes(ERROR | STARTUP | CONNECTION | GENERAL | APPLICATION | DEBUG | MSG_TYPES);  // set before init() so that you can see startup messages
     __mesh.init(m_meshName, m_meshPassword, m_meshPort, WIFI_AP_STA, m_meshChannel);
     __mesh.setContainsRoot(true);
