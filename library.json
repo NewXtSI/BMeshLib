@@ -1,0 +1,25 @@
+{
+    "name": "BMeshLib",
+    "version": "0.0.1",
+    "description": "A wrapperlib over painlessmesh",
+    "keywords": "mesh, esp, library",
+    "repository":
+    {
+      "type": "git",
+      "url": "https://github.com/NewXtSI/BMeshLib.git"
+    },
+    "authors":
+    [
+      {
+        "name": "Henning Schreiber",
+        "email": "leerzeichen32@googlemail.com",
+        "url": "https://www.john-smith/contact"
+      }
+    ],
+    "license": "MIT",
+    "dependencies": {
+      "painlessmesh/painlessMesh": "^1.5.0"
+    },
+    "frameworks": "*",
+    "platforms": "*"
+  }
