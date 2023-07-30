@@ -2,6 +2,7 @@
 #define __BMESH_H__
 
 #include <Arduino.h>
+#include <memory>
 
 class Scheduler;
 class Task;
@@ -32,7 +33,7 @@ class BMesh {
     void        onConnection(BoolCallBack callBack);
 
  private:
-    Task*       m_heartbeatTask;
+    std::shared_ptr<Task>       m_heartbeatTask;
     uint32_t    m_gatewayNode;
 
     String      m_meshName;

@@ -72,7 +72,8 @@ BMesh::init(String meshName, String meshPassword, uint16_t meshPort, uint8_t mes
     __mesh.setContainsRoot(true);
     __mesh.onReceive([&](uint32_t from, String &msg) { receivedCallback(from, msg); });
 
-    m_heartbeatTask = __mesh.addTask(10000, 10, sendHeartbeat);
+    m_heartbeatTask = __mesh.addTask(10000, 10, [&]() { this->sendHeartbeat();} );
+    m_heartbeatTask->enable();
     return bRet;
 }
 
@@ -129,7 +130,7 @@ BMesh::isGatewayConnected() {
 
 void        
 BMesh::onHeartbeat(VoidCallBack callBack) {
-    this->onHeartbeat = CallBack;
+    this->heartbeatCallBack = callBack;
 }
 
 void
