@@ -4,13 +4,16 @@
 #include <Arduino.h>
 
 class Scheduler;
+class Task;
 
 class BMesh {
  protected:
     using       BoolCallBack = void (*)(bool);
     using       StringCallBack = void (*)(String);
+    using       VoidCallBack = void (*)();
 
     StringCallBack  actionCallBack = nullptr;
+    VoidCallBack    heartbeatCallBack = nullptr;
     BoolCallBack    connectionCallBack = nullptr;           // Connection to "world" established
  public:
                 BMesh();
@@ -24,9 +27,12 @@ class BMesh {
     bool        isMeshConnected();      // Minimum 1 node can be reached
     bool        isGatewayConnected();   // For nodes: Gateway is set and can be reached
 
+    void        onHeartbeat(VoidCallBack callBack);
     void        onAction(StringCallBack callBack);
     void        onConnection(BoolCallBack callBack);
+
  private:
+    Task*       m_heartbeatTask;
     uint32_t    m_gatewayNode;
 
     String      m_meshName;

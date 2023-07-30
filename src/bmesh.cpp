@@ -56,7 +56,8 @@ BMesh::sendHello() {
 
 void
 BMesh::sendHeartbeat() {
-
+    if (heartbeatCallBack)
+        heartbeatCallBack();
 }
 
 bool
@@ -70,6 +71,8 @@ BMesh::init(String meshName, String meshPassword, uint16_t meshPort, uint8_t mes
     __mesh.init(m_meshName, m_meshPassword, m_scheduler, m_meshPort, WIFI_AP_STA, m_meshChannel);
     __mesh.setContainsRoot(true);
     __mesh.onReceive([&](uint32_t from, String &msg) { receivedCallback(from, msg); });
+
+    m_heartbeatTask = __mesh.addTask(10000, 10, sendHeartbeat);
     return bRet;
 }
 
@@ -122,6 +125,11 @@ bool
 BMesh::isGatewayConnected() {
     bool bRet = false;
     return bRet;
+}
+
+void        
+BMesh::onHeartbeat(VoidCallBack callBack) {
+    this->onHeartbeat = CallBack;
 }
 
 void
