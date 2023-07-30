@@ -3,6 +3,8 @@
 
 #include <Arduino.h>
 
+class Scheduler;
+
 class BMesh {
  protected:
     using       BoolCallBack = void (*)(bool);
@@ -40,6 +42,7 @@ class BMesh {
 
     void            sendHello();
     void            sendHeartbeat();
+    Scheduler*  m_scheduler;
 };
 
 #endif // __BMESH_H__

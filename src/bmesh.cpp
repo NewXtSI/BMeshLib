@@ -10,7 +10,6 @@
 
 painlessMesh  __mesh;
 
-
 BMesh::BMesh() {
     m_meshName = "";
     m_meshPassword = "";
@@ -18,6 +17,7 @@ BMesh::BMesh() {
     m_meshChannel = 0;
     m_isGateway = false;
     m_gatewayNode = 0;
+    m_scheduler = new Scheduler();
     m_SSID = "";
     m_Password = "";
     m_IP = IPAddress(0, 0 , 0, 0);
@@ -67,7 +67,7 @@ BMesh::init(String meshName, String meshPassword, uint16_t meshPort, uint8_t mes
     m_meshPort = meshPort;
     m_meshChannel = meshChannel;
     __mesh.setDebugMsgTypes(ERROR | STARTUP | CONNECTION | GENERAL | APPLICATION | DEBUG | MSG_TYPES);  // set before init() so that you can see startup messages
-    __mesh.init(m_meshName, m_meshPassword, m_meshPort, WIFI_AP_STA, m_meshChannel);
+    __mesh.init(m_meshName, m_meshPassword, m_scheduler, m_meshPort, WIFI_AP_STA, m_meshChannel);
     __mesh.setContainsRoot(true);
     __mesh.onReceive([&](uint32_t from, String &msg) { receivedCallback(from, msg); });
     return bRet;
@@ -89,7 +89,7 @@ BMesh::loop() {
     if (isGateway()) {
         if (m_IP != getlocalIP()) {
             m_IP = getlocalIP();
-            if (m_IP == IPAddress(0,0,0,0)) {
+            if (m_IP == IPAddress(0, 0, 0, 0)) {
                 // Lost connection to station
                 if (connectionCallBack)
                     connectionCallBack(false);
