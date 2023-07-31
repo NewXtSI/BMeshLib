@@ -67,12 +67,13 @@ BMesh::init(String meshName, String meshPassword, uint16_t meshPort, uint8_t mes
     m_meshPassword = meshPassword;
     m_meshPort = meshPort;
     m_meshChannel = meshChannel;
-    __mesh.setDebugMsgTypes(ERROR | STARTUP | CONNECTION | GENERAL | APPLICATION | DEBUG | MSG_TYPES);  // set before init() so that you can see startup messages
+      // set before init() so that you can see startup messages
+    __mesh.setDebugMsgTypes(ERROR | STARTUP | CONNECTION | GENERAL | APPLICATION | DEBUG | MSG_TYPES);
     __mesh.init(m_meshName, m_meshPassword, m_scheduler, m_meshPort, WIFI_AP_STA, m_meshChannel);
     __mesh.setContainsRoot(true);
     __mesh.onReceive([&](uint32_t from, String &msg) { receivedCallback(from, msg); });
 
-    m_heartbeatTask = __mesh.addTask(10000, 10, [&]() { this->sendHeartbeat();} );
+    m_heartbeatTask = __mesh.addTask(TASK_SECOND * 10, TASK_FOREVER, [&]() { this->sendHeartbeat();});
     m_heartbeatTask->enable();
     return bRet;
 }
@@ -128,7 +129,7 @@ BMesh::isGatewayConnected() {
     return bRet;
 }
 
-void        
+void
 BMesh::onHeartbeat(VoidCallBack callBack) {
     this->heartbeatCallBack = callBack;
 }
