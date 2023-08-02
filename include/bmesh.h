@@ -3,53 +3,108 @@
 
 #include <Arduino.h>
 #include <memory>
+#include <vector>
+
+#define FEATURE_LOCATE           (1 << 0)
+#define FEATURE_BUTTON           (1 << 1)       // Config Pin Number [4], -1 wenn nicht benutzt
+#define FEATURE_MIYASCAN         (1 << 20)
+#define FEATURE_BLETRACK         (1 << 21)
 
 class Scheduler;
 class Task;
+
+typedef struct {
+    String key;
+    String value;
+} valueset_t;
 
 class BMesh {
  protected:
     using       BoolCallBack = void (*)(bool);
     using       StringCallBack = void (*)(String);
+    using       ULongStringCallBack = void (*)(uint32_t, String);
     using       VoidCallBack = void (*)();
+    using       ULongCallBack = void (*)(uint32_t);
 
-    StringCallBack  actionCallBack = nullptr;
-    VoidCallBack    heartbeatCallBack = nullptr;
-    BoolCallBack    connectionCallBack = nullptr;           // Connection to "world" established
+    StringCallBack               dataReceivedCallBack = nullptr;
+    StringCallBack               actionCallBack = nullptr;
+    VoidCallBack                 heartbeatCallBack = nullptr;
+    VoidCallBack                 sendValuesCallBack = nullptr;
+    ULongCallBack                nodeDeletedCallBack = nullptr;
+    ULongCallBack                nodeAddedCallBack = nullptr;
+
+    ULongCallBack                enableFeatureCallBack = nullptr;
+    ULongCallBack                disableFeatureCallBack = nullptr;
+    ULongStringCallBack          configFeatureCallBack = nullptr;
+
+    BoolCallBack                 connectionCallBack = nullptr;           // Connection to "world" established
  public:
-                BMesh();
-    bool        init(String meshName, String meshPassword, uint16_t meshPort, uint8_t meshChannel);
-    void        setGatewayMode(String SSID, String Password);
-    void        loop();
+                                BMesh();
+    void                        setVersion(String sVersion);                                
+    bool                        init(String meshName, String meshPassword, uint16_t meshPort, uint8_t meshChannel);
+    void                        setGatewayMode(String SSID, String Password);
+    void                        loop();
 
-    bool        isGateway();
-    IPAddress   getlocalIP();           // Bei Gateway, STATION IP
+    bool                        isGateway();
+    IPAddress                   getlocalIP();           // Bei Gateway, STATION IP
 
-    bool        isMeshConnected();      // Minimum 1 node can be reached
-    bool        isGatewayConnected();   // For nodes: Gateway is set and can be reached
+    bool                        isMeshConnected();      // Minimum 1 node can be reached
+    bool                        isGatewayConnected();   // For nodes: Gateway is set and can be reached
 
-    void        onHeartbeat(VoidCallBack callBack);
-    void        onAction(StringCallBack callBack);
-    void        onConnection(BoolCallBack callBack);
+    void                        onHeartbeat(VoidCallBack callBack);
+    void                        onSendValues(VoidCallBack callBack);
+    void                        onAction(StringCallBack callBack);
+    void                        onDataReceived(StringCallBack callBack);
+    void                        onConnection(BoolCallBack callBack);
+    void                        onNodeAdded(ULongCallBack callBack);
+    void                        onNodeDeleted(ULongCallBack callBack);
+
+    void                        onEnableFeature(ULongCallBack callBack);
+    void                        onDisableFeature(ULongCallBack callBack);
+    void                        onConfigFeature(ULongStringCallBack callBack);
+    
+    String                      getFeatureName(uint32_t uiFeature);
+
+    void                        sendNodeAction(uint32_t uiNodeID, String sAction);
+    void                        enableNodeFeature(uint32_t uiNodeID, uint32_t uiFeature, bool bEnable);
+    void                        configNodeFeature(uint32_t uiNodeID, uint32_t uiFeature, String sConfig);
+    void                        sendMultipleValues(std::vector<valueset_t> valueSet);
+    void                        sendSingleValue(valueset_t valueSet);
+    void                        sendSingleValue(String key, String value);
+    void                        sendRaw(String sData);
+    void                        setFeatureSet(uint32_t fSet) { m_featureSet = fSet; }
+    void                        offerOTA(String filename, String hardware);
 
  private:
     std::shared_ptr<Task>       m_heartbeatTask;
-    uint32_t    m_gatewayNode;
+    std::shared_ptr<Task>       m_gatewayCheckTask;
+    std::shared_ptr<Task>       m_sendValuesTask;
+    std::shared_ptr<Task>       m_checkDeadnodeTask;
+    uint32_t                    m_gatewayNode;
 
-    String      m_meshName;
-    String      m_meshPassword;
-    uint32_t    m_meshPort;
-    uint8_t     m_meshChannel;
-    IPAddress   m_IP;
-    bool        m_isGateway;
-    String      m_SSID;
-    String      m_Password;
+    uint32_t                    m_featureSet;
 
-    void            receivedCallback(uint32_t from, String &msg);
+    String                      m_nodeVersion;
+    String                      m_meshName;
+    String                      m_meshPassword;
+    uint32_t                    m_meshPort;
+    uint8_t                     m_meshChannel;
+    IPAddress                   m_IP;
+    bool                        m_isGateway;
+    String                      m_SSID;
+    String                      m_Password;
 
-    void            sendHello();
-    void            sendHeartbeat();
-    Scheduler*  m_scheduler;
+    void                        receivedCallback(uint32_t from, const String &msg);
+    void                        changedConnectionsCallback();
+    void                        sendHello();
+    void                        sendHeartbeat();
+    void                        checkGateway();
+    void                        sendValues();
+    void                        checkDeadnodes();
+
+    Scheduler*                  m_scheduler;
+
+    std::vector<uint32_t>       m_connectedNodes;
 };
 
 #endif // __BMESH_H__
