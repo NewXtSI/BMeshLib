@@ -33,6 +33,11 @@ BMesh::BMesh() {
     m_IP = IPAddress(0, 0 , 0, 0);
 }
 
+uint32_t                    
+BMesh::getId() {
+    return __mesh.getNodeId();
+}
+
 void
 BMesh::receivedCallback(uint32_t from, const String &msg) {
     bool bHandledInternal = false;
@@ -57,8 +62,7 @@ BMesh::receivedCallback(uint32_t from, const String &msg) {
                 if (sAction == "OTA") {
                     Serial.printf("Enabling OTA receive...\n");
                     __mesh.initOTAReceive("basenode");
-                }
-                if (sAction == "restart") {
+                } else if (sAction == "restart") {
                     Serial.printf("Restarting in 5 seconds...\n");
                     std::shared_ptr<Task> restartTask  = __mesh.addTask(TASK_SECOND * 5, 1, [&]() {
 #ifdef ESP8266
@@ -68,6 +72,9 @@ BMesh::receivedCallback(uint32_t from, const String &msg) {
 #endif
                     });
                     restartTask->enableDelayed();
+                } else {
+                    if (actionCallBack)
+                        actionCallBack(sAction);
                 }
 
             }
@@ -197,7 +204,6 @@ BMesh::checkGateway() {
 
 void
 BMesh::sendValues() {
-    Serial.printf("Send values task...\n");
     if (sendValuesCallBack)
         sendValuesCallBack();
 }
@@ -505,12 +511,12 @@ fileSendCallback(painlessmesh::plugin::ota::DataRequest pkg,
 
 String
 BMesh::getFeatureName(uint32_t uiFeature) {
-    switch (uiFeature) {
+/*    switch (uiFeature) {
         case FEATURE_LOCATE:                return "Locate";
         case FEATURE_BUTTON:                return "Button";
         case FEATURE_BLETRACK:              return "BLE track";
         case FEATURE_MIYASCAN:              return "MiyaScan";
-    }
+    }*/
     return "unknown";
 }
 

@@ -5,11 +5,6 @@
 #include <memory>
 #include <vector>
 
-#define FEATURE_LOCATE           (1 << 0)
-#define FEATURE_BUTTON           (1 << 1)       // Config Pin Number [4], -1 wenn nicht benutzt
-#define FEATURE_MIYASCAN         (1 << 20)
-#define FEATURE_BLETRACK         (1 << 21)
-
 class Scheduler;
 class Task;
 
@@ -44,7 +39,7 @@ class BMesh {
     bool                        init(String meshName, String meshPassword, uint16_t meshPort, uint8_t meshChannel);
     void                        setGatewayMode(String SSID, String Password);
     void                        loop();
-
+    uint32_t                    getId();
     bool                        isGateway();
     IPAddress                   getlocalIP();           // Bei Gateway, STATION IP
 
@@ -75,6 +70,7 @@ class BMesh {
     void                        setFeatureSet(uint32_t fSet) { m_featureSet = fSet; }
     void                        offerOTA(String filename, String hardware);
 
+    Scheduler*                  getScheduler() { return m_scheduler; }
  private:
     std::shared_ptr<Task>       m_heartbeatTask;
     std::shared_ptr<Task>       m_gatewayCheckTask;
