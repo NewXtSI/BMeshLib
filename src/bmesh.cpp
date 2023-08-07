@@ -43,7 +43,7 @@ BMesh::receivedCallback(uint32_t from, const String &msg) {
     bool bHandledInternal = false;
     StaticJsonDocument<256> doc;
     DeserializationError error = deserializeJson(doc, msg);
-    bool bRestartNeeded = false;
+//    bool bRestartNeeded = false;
     if (error) {
         Serial.print(F("deserializeJson() failed: "));
         Serial.println(error.f_str());
@@ -302,11 +302,18 @@ BMesh::isMeshConnected() {
 bool
 BMesh::isGatewayConnected() {
     bool bRet = false;
+    if (isGateway())
+        bRet = true;
+    if (__mesh.isConnected(m_gatewayNode))
+        bRet = true;
     return bRet;
 }
 
+
 void                        
 BMesh::checkDeadnodes() {
+    static uint8_t uiRunsWithGatewayNotReachable = 0;
+
     std::list<uint32_t> actualNodes = __mesh.getNodeList();
     std::vector<uint32_t> newNodes;
     std::vector<uint32_t> deletedNodes;
@@ -347,6 +354,24 @@ BMesh::checkDeadnodes() {
             if (nodeDeletedCallBack)
                 nodeDeletedCallBack(*itAct);
         }
+    }
+
+    if (!isGateway()) {
+        if (m_gatewayNode != 0) {
+            if (isGatewayConnected()) {
+                uiRunsWithGatewayNotReachable = 0;
+            } else {
+                if (++uiRunsWithGatewayNotReachable > 3) {
+#ifdef ESP8266
+                ESP.reset();
+#else
+                ESP.restart();
+#endif
+
+                }
+            }
+        }
+
     }
 }
 
